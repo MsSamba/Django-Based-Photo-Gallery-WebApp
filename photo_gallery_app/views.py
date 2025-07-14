@@ -4,6 +4,9 @@ from .forms import UserRegisterForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
+def redirect_to_login(request):
+    return redirect('login')
+
 def register(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
@@ -13,8 +16,8 @@ def register(request):
             return redirect('login')
     else:
         form = UserRegisterForm()
-    return render(request, 'photo_gallery/register.html', {'form': form})
+    return render(request, 'photo_gallery_app/register.html', {'form': form})
 
 @login_required
 def profile(request):
-    return render(request, 'photo_gallery/profile.html')
+    return render(request, 'photo_gallery_app/profile.html')
