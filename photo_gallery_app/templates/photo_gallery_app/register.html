@@ -1,9 +1,154 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block title %}Register - Photo Gallery{% endblock %}
+
 {% block content %}
-<h2>Register</h2>
-<form method="POST">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Sign Up</button>
-</form>
+<div class="max-w-md mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="text-center mb-8">
+            <i class="fas fa-user-plus text-4xl text-indigo-600 mb-4"></i>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Join Us</h1>
+            <p class="text-gray-600">Create your account to start sharing photos</p>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Username -->
+            <div>
+                <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Username <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-user text-gray-400"></i>
+                    </div>
+                    <input type="text" 
+                           name="{{ form.username.name }}" 
+                           id="{{ form.username.id_for_label }}"
+                           required
+                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                           placeholder="Choose a username"
+                           value="{{ form.username.value|default:'' }}">
+                </div>
+                {% if form.username.errors %}
+                    <div class="mt-2 text-sm text-red-600">
+                        {{ form.username.errors }}
+                    </div>
+                {% endif %}
+                {% if form.username.help_text %}
+                    <div class="mt-1 text-sm text-gray-500">
+                        {{ form.username.help_text }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Email <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-envelope text-gray-400"></i>
+                    </div>
+                    <input type="email" 
+                           name="{{ form.email.name }}" 
+                           id="{{ form.email.id_for_label }}"
+                           required
+                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                           placeholder="Enter your email"
+                           value="{{ form.email.value|default:'' }}">
+                </div>
+                {% if form.email.errors %}
+                    <div class="mt-2 text-sm text-red-600">
+                        {{ form.email.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Password -->
+            <div>
+                <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Password <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-lock text-gray-400"></i>
+                    </div>
+                    <input type="password" 
+                           name="{{ form.password1.name }}" 
+                           id="{{ form.password1.id_for_label }}"
+                           required
+                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                           placeholder="Create a password">
+                </div>
+                {% if form.password1.errors %}
+                    <div class="mt-2 text-sm text-red-600">
+                        {{ form.password1.errors }}
+                    </div>
+                {% endif %}
+                {% if form.password1.help_text %}
+                    <div class="mt-1 text-sm text-gray-500">
+                        {{ form.password1.help_text }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Confirm Password -->
+            <div>
+                <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Confirm Password <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-lock text-gray-400"></i>
+                    </div>
+                    <input type="password" 
+                           name="{{ form.password2.name }}" 
+                           id="{{ form.password2.id_for_label }}"
+                           required
+                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                           placeholder="Confirm your password">
+                </div>
+                {% if form.password2.errors %}
+                    <div class="mt-2 text-sm text-red-600">
+                        {{ form.password2.errors }}
+                    </div>
+                {% endif %}
+                {% if form.password2.help_text %}
+                    <div class="mt-1 text-sm text-gray-500">
+                        {{ form.password2.help_text }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+                <button type="submit" 
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-md font-medium transition duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <i class="fas fa-user-plus mr-2"></i>
+                    Create Account
+                </button>
+            </div>
+
+            <!-- Form Errors -->
+            {% if form.non_field_errors %}
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+        </form>
+
+        <!-- Login Link -->
+        <div class="mt-6 text-center">
+            <p class="text-gray-600">
+                Already have an account?
+                <a href="{% url 'login' %}" class="text-indigo-600 hover:text-indigo-700 font-medium">
+                    Sign in here
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Photo Gallery - Home{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Hero Section -->
+    <div class="text-center">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">Welcome to Photo Gallery</h1>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto">Discover amazing photos, portraits, and artworks from our community of photographers and artists.</p>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
+            <!-- Search Bar -->
+            <div class="flex-1 w-full lg:max-w-lg">
+                <form method="GET" class="relative">
+                    <input type="text" 
+                           name="search" 
+                           value="{{ search_query|default:'' }}"
+                           placeholder="Search photos..." 
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    {% if current_tag %}
+                        <input type="hidden" name="tag" value="{{ current_tag }}">
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Filter by Tags -->
+            <div class="flex flex-wrap gap-2">
+                <a href="{% url 'gallery-home' %}{% if search_query %}?search={{ search_query }}{% endif %}" 
+                   class="px-3 py-1 rounded-full text-sm {% if not current_tag %}bg-indigo-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition duration-150">
+                    All
+                </a>
+                {% for tag in tags %}
+                    <a href="?tag={{ tag.name }}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                       class="px-3 py-1 rounded-full text-sm {% if current_tag == tag.name %}bg-indigo-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition duration-150">
+                        {{ tag.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Photo Grid -->
+    {% if page_obj %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for photo in page_obj %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                    <div class="aspect-w-16 aspect-h-12 bg-gray-200">
+                        <img src="{{ photo.image.url }}" 
+                             alt="{{ photo.title }}" 
+                             class="w-full h-48 object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg text-gray-900 mb-2 truncate">{{ photo.title }}</h3>
+                        <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ photo.description|truncatewords:15 }}</p>
+                        
+                        <!-- Tags -->
+                        {% if photo.tags.all %}
+                            <div class="flex flex-wrap gap-1 mb-3">
+                                {% for tag in photo.tags.all|slice:":3" %}
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">{{ tag.name }}</span>
+                                {% endfor %}
+                                {% if photo.tags.count > 3 %}
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">+{{ photo.tags.count|add:"-3" }}</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Photo Stats -->
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-3">
+                            <div class="flex items-center space-x-3">
+                                <span class="flex items-center">
+                                    <i class="fas fa-heart text-red-500 mr-1"></i>
+                                    {{ photo.likes_count }}
+                                </span>
+                                <span class="flex items-center">
+                                    <i class="fas fa-heart-broken text-gray-400 mr-1"></i>
+                                    {{ photo.dislikes_count }}
+                                </span>
+                            </div>
+                            <span>{{ photo.created_at|date:"M d" }}</span>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="flex items-center justify-between">
+                            <a href="{% url 'photo-detail' photo.pk %}" 
+                               class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150">
+                                View Details
+                            </a>
+                            <a href="{% url 'user-photos' photo.uploaded_by.username %}" 
+                               class="text-gray-500 hover:text-gray-700 text-sm transition duration-150">
+                                by {{ photo.uploaded_by.username }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div class="flex justify-center mt-8">
+                <nav class="flex items-center space-x-2">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if current_tag %}&tag={{ current_tag }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                           class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition duration-150">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if current_tag %}&tag={{ current_tag }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                           class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition duration-150">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+
+                    <span class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if current_tag %}&tag={{ current_tag }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                           class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition duration-150">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if current_tag %}&tag={{ current_tag }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                           class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition duration-150">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        {% endif %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-12">
+            <i class="fas fa-camera text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-2xl font-semibold text-gray-600 mb-2">No photos found</h3>
+            <p class="text-gray-500 mb-6">
+                {% if search_query or current_tag %}
+                    Try adjusting your search or filter criteria.
+                {% else %}
+                    Be the first to share a photo with the community!
+                {% endif %}
+            </p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'photo-upload' %}" 
+                   class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-md font-medium transition duration-150">
+                    <i class="fas fa-plus mr-2"></i> Upload Photo
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<script>
+// Auto-submit search form on input
+document.querySelector('input[name="search"]').addEventListener('input', function(e) {
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+        this.form.submit();
+    }, 500);
+});
+</script>
+{% endblock %}

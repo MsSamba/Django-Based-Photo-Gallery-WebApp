@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ photos_user.username }}'s Photos - Photo Gallery{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- User Info Header -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center space-x-4">
+            <img src="{{ photos_user.userprofile.profile_picture.url }}" 
+                 alt="{{ photos_user.username }}'s Profile Picture" 
+                 class="w-16 h-16 rounded-full object-cover border-2 border-gray-200">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">{{ photos_user.username }}'s Photos</h1>
+                <p class="text-gray-600">{{ page_obj.paginator.count }} photo{{ page_obj.paginator.count|pluralize }}</p>
+                {% if photos_user.userprofile.bio %}
+                    <p class="text-gray-700 mt-2">{{ photos_user.userprofile.bio|truncatewords:20 }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Photos Grid -->
+    {% if page_obj %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for photo in page_obj %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                    <div class="aspect-w-16 aspect-h-12 bg-gray-200">
+                        <img src="{{ photo.image.url }}" 
+                             alt="{{ photo.title }}" 
+                             class="w-full h-48 object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg text-gray-900 mb-2 truncate">{{ photo.title }}</h3>
+                        <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ photo.description|truncatewords:15 }}</p>
+                        
+                        <!-- Tags -->
+                        {% if photo.tags.all %}
+                            <div class="flex flex-wrap gap-1 mb-3">
+                                {% for tag in photo.tags.all|slice:":3" %}
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">{{ tag.name }}</span>
+                                {% endfor %}
+                                {% if photo.tags.count > 3 %}
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">+{{ photo.tags.count|add:"-3" }}</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Photo Stats -->
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-3">
+                            <div class="flex items-center space-x-3">
+                                <span class="flex items-center">
+                                    <i class="fas fa-heart text-red-500 mr-1"></i>
+                                    {{ photo.likes_count }}
+                                </span>
+                                <span class="flex items-center">
+                                    <i class="fas fa-heart-broken text-gray-400 mr-1"></i>
+                                    {{ photo.dislikes_count }}
+                                </span>
+                            </div>
+                            <span>{{ photo.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="flex items-center justify-center">
+                            <a href="{% url 'photo-detail' photo.pk %}" 
+                               class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 text-center">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div class="flex justify-center mt-8">
+                <nav class="flex items-center space-x-2">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1" 
+                           class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition duration-150">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}" 
+                           class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition duration-150">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+
+                    <span class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" 
+                           class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition duration-150">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}" 
+                           class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition duration-150">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        {% endif %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-12">
+            <i class="fas fa-camera text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-2xl font-semibold text-gray-600 mb-2">No photos found</h3>
+            <p class="text-gray-500 mb-6">{{ photos_user.username }} hasn't uploaded any photos yet.</p>
+            <a href="{% url 'gallery-home' %}" 
+               class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-md font-medium transition duration-150">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back to Gallery
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Back to Gallery -->
+    <div class="text-center">
+        <a href="{% url 'gallery-home' %}" 
+           class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-150">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Gallery
+        </a>
+    </div>
+</div>
+{% endblock %}
